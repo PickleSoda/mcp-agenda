@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AgendaClient } from '../services/agenda-client.js';
+import { AgendaClient } from '../services/agenda-client';
 
 export const createBookingTool = {
   name: "create_booking",

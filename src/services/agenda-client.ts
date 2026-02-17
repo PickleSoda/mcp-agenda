@@ -1,10 +1,9 @@
+
 import axios from 'axios';
 import { z } from 'zod';
 import { 
-  Service, 
-  Slot, 
-  Booking, 
   AgendaClassesResponse, 
+ 
   AgendaClass, 
   AgendaClassesResponseSchema,
   AvailabilitiesResponseSchema,
@@ -14,7 +13,14 @@ import {
   BookingConfirmResponseSchema,
   BookingConfirmResponse,
   CancelAppointmentResponseSchema,
-  CancelAppointmentResponse
+  CancelAppointmentResponse,
+  CompanyInfoResponseSchema,
+  CompanyInfoResponse,
+  AgendasResponseSchema,
+  AgendasResponse,
+  Agenda,
+  BookablesResponseSchema,
+  BookableService
 } from '../types/agenda.js';
 
 const BASE_URL = 'https://node.agenda.ch';
@@ -43,6 +49,88 @@ export const AgendaClient = {
       return parsed.data.data;
     } catch (error) {
       console.error('Error fetching classes:', error);
+      throw error;
+    }
+  },
+
+  getCompanyInfo: async (companyId: number | string, locale: string = 'en'): Promise<CompanyInfoResponse> => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api_front/pro_users`, {
+        params: {
+          company_id: companyId,
+          locale,
+          _: Date.now()
+        },
+        headers: {
+          'Accept': 'application/json, text/plain, */*',
+          'Accept-Language': 'en-US,en;q=0.9',
+        }
+      });
+      
+      const parsed = CompanyInfoResponseSchema.safeParse(response.data);
+      if (!parsed.success) {
+        console.error('Validation error fetching company info:', parsed.error);
+        throw new Error('Invalid API response format');
+      }
+      
+      return parsed.data;
+    } catch (error) {
+      console.error('Error fetching company info:', error);
+      throw error;
+    }
+  },
+
+  getAgendas: async (companyId: number | string, locale: string = 'en'): Promise<Agenda[]> => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api_front/agendas`, {
+        params: {
+          company_id: companyId,
+          locale,
+          _: Date.now()
+        },
+        headers: {
+          'Accept': 'application/json, text/plain, */*',
+          'Accept-Language': 'en-US,en;q=0.9',
+        }
+      });
+      
+      const parsed = AgendasResponseSchema.safeParse(response.data);
+      if (!parsed.success) {
+        console.error('Validation error fetching agendas:', parsed.error);
+        throw new Error('Invalid API response format');
+      }
+      
+      return parsed.data;
+    } catch (error) {
+      console.error('Error fetching agendas:', error);
+      throw error;
+    }
+  },
+
+  getBookables: async (companyId: number | string, locale: string = 'en'): Promise<BookableService[]> => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api_front/bookables`, {
+        params: {
+          company_id: companyId,
+          locale,
+          'types[]': 'services',
+          _: Date.now()
+        },
+        headers: {
+          'Accept': 'application/json, text/plain, */*',
+          'Accept-Language': 'en-US,en;q=0.9',
+        }
+      });
+      
+      const parsed = BookablesResponseSchema.safeParse(response.data);
+      if (!parsed.success) {
+        console.error('Validation error fetching bookables:', parsed.error);
+        throw new Error('Invalid API response format');
+      }
+      
+      return parsed.data.services;
+    } catch (error) {
+      console.error('Error fetching bookables:', error);
       throw error;
     }
   },
@@ -237,29 +325,5 @@ export const AgendaClient = {
       console.error('Error cancelling appointment:', error);
       throw error;
     }
-  },
-
-  getServices: async (companyId: string, locationId?: string): Promise<Service[]> => {
-    // Mock implementation
-    return [
-      { id: '1', name: 'Mock Service', duration: 30, price: 50 },
-      { id: '2', name: 'Another Service', duration: 60, price: 100 }
-    ];
-  },
-
-  getAvailableSlots: async (companyId: string, serviceId: string, locationId: string, date: string, range?: string): Promise<Slot[]> => {
-    // Mock implementation
-    return [
-      { id: 'slot_1', datetime: `${date}T10:00:00Z` },
-      { id: 'slot_2', datetime: `${date}T11:00:00Z` }
-    ];
-  },
-
-  createBooking: async (companyId: string, slotId: string, serviceId: string, customer: { name: string, phone: string, email: string, notes?: string }): Promise<Booking> => {
-    // Mock implementation
-    return {
-      referenceNumber: `BK-${Math.floor(Math.random() * 10000)}`,
-      status: 'confirmed'
-    };
   }
 };

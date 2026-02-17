@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { AgendaClient } from '../services/agenda-client.js';
-import { AgendaClass } from '../types/agenda.js';
+import { AgendaClient } from '../services/agenda-client';
+import { AgendaClass } from '../types/agenda';
 
 export const getServicesTool = {
   name: "get_services",

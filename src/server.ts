@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { tools } from "./tools/index.js";
+import { tools } from "./tools/index";
 
 export const mcpServer = new McpServer({
   name: "agenda-booking",
