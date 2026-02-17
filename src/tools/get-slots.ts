@@ -3,7 +3,7 @@ import { AgendaClient } from '../services/agenda-client';
 
 export const getAvailableSlotsTool = {
   name: "get_available_slots",
-  description: "Fetch available time slots for a specific service. Requires `service_id` (bookableId) and `location_id` from `get_services`.",
+  description: "Fetch available time slots for a specific service. Returns a flat list of slots with datetime, agenda_id, agenda_name, and duration_end. Use service_id from get_bookables (NOT get_services). IMPORTANT: Extract the agenda_id from the selected slot for use in confirm_booking.",
   inputSchema: z.object({
     company_id: z.string().optional().describe("Company ID (optional if in env)"),
     service_id: z.string().describe("Service ID (bookableId)"),
@@ -17,6 +17,13 @@ export const getAvailableSlotsTool = {
     
     if (!companyId) {
       throw new Error("company_id is required either as an argument or COMPANY_ID env var");
+    }
+
+    // Fetch agendas to map IDs to names
+    const agendas = await AgendaClient.getAgendas(companyId);
+    const agendaMap = new Map<string, string>();
+    for (const agenda of agendas) {
+      agendaMap.set(agenda.id.toString(), agenda.name);
     }
 
     const availabilities = await AgendaClient.getAvailabilities(
@@ -35,18 +42,16 @@ export const getAvailableSlotsTool = {
       // Filter out days with no slots if any (though usually empty array)
       if (!daySlots) return [];
       
-      return daySlots.map(slot => ({
-        datetime: new Date(slot.start * 1000).toISOString(), // Convert unix timestamp to ISO
-        // We need a slot identifier. 
-        // For booking, we usually need 'start' time and 'agenda_id'.
-        // Let's create a composite ID or return the necessary fields.
-        // The `confirmBooking` needs `start` (datetime string) and `agenda_id`.
-        // The slot object has `agenda_ids`. We can pick the first one or return all.
-        // For simplicity, let's return the first available agenda_id as the default one to use.
-        agenda_id: slot.agenda_ids[0]?.toString(), 
-        duration_end: slot.end,
-        timestamp: slot.start
-      }));
+      return daySlots.map(slot => {
+        const agendaId = slot.agenda_ids[0]?.toString();
+        return {
+          datetime: new Date(slot.start * 1000).toISOString(), // Convert unix timestamp to ISO
+          agenda_id: agendaId,
+          agenda_name: agendaMap.get(agendaId) || 'Unknown',
+          duration_end: slot.end,
+          timestamp: slot.start
+        };
+      });
     });
 
     return {

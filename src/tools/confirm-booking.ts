@@ -3,7 +3,7 @@ import { AgendaClient } from '../services/agenda-client';
 
 export const confirmBookingTool = {
   name: "confirm_booking",
-  description: "Confirm a booking with full control over all parameters.",
+  description: "Confirm a booking and create the appointment. IMPORTANT: Use the agenda_id extracted from the selected slot in get_available_slots. The detail object should contain all required fields from configure_booking (e.g., firstname, lastname, mobile, and any custom fields like '4982').",
   inputSchema: z.object({
     company_id: z.string().optional().describe("Company ID (optional if configured in env)"),
     bookable_id: z.number().describe("Service ID"),

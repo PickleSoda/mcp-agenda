@@ -3,7 +3,7 @@ import { AgendaClient } from '../services/agenda-client';
 
 export const configureBookingTool = {
   name: "configure_booking",
-  description: "Configure a booking before confirmation. Returns required fields and validation status.",
+  description: "Get required form fields before confirming a booking. Returns a list of fields with name, label, type, and required status. Field names like 'detail[firstname]' map to keys in the detail object for confirm_booking. ALWAYS call this before confirm_booking to know what information to collect from the user.",
   inputSchema: z.object({
     company_id: z.string().optional().describe("Company ID (optional if configured in env)"),
     email: z.string().email().describe("Customer Email"),

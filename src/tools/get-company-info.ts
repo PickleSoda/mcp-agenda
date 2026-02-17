@@ -3,7 +3,7 @@ import { AgendaClient } from '../services/agenda-client';
 
 export const getCompanyInfoTool = {
   name: "get_company_info",
-  description: "Fetch company information including locations, resources, and pax categories.",
+  description: "Fetch company information including locations. Start here to get available location_ids. Look for locations where enabled=true. Each location has an id, name, address, and service_ids.",
   inputSchema: z.object({
     company_id: z.string().optional().describe("Company ID (optional if configured in env)"),
     locale: z.string().optional().default('en').describe("Locale (default: en)")

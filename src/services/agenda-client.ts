@@ -21,7 +21,7 @@ import {
   Agenda,
   BookablesResponseSchema,
   BookableService
-} from '../types/agenda.js';
+} from '../types/agenda';
 
 const BASE_URL = 'https://node.agenda.ch';
 

@@ -3,7 +3,7 @@ import { AgendaClient } from '../services/agenda-client';
 
 export const getBookablesTool = {
   name: "get_bookables",
-  description: "Fetch bookable services for a company.",
+  description: "Fetch bookable services for a company. Returns services with id (use as service_id/bookable_id), name, locationIds, and hiddenOnWidget. IMPORTANT: Filter out services where hiddenOnWidget=true and only show services where locationIds includes your selected location.",
   inputSchema: z.object({
     company_id: z.string().optional().describe("Company ID (optional if configured in env)"),
     locale: z.string().optional().default('en').describe("Locale (default: en)")
