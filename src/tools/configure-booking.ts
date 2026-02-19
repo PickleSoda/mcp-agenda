@@ -10,6 +10,7 @@ export const configureBookingTool = {
     service_id: z.string().describe("Service ID (bookableId)"),
     participant_count: z.number().optional().default(1).describe("Number of participants"),
     phone_number: z.string().optional().default('').describe("Customer Phone Number"),
+    returning_customer: z.string().optional().default('false').describe("Returning Customer ('true' or 'false')"),
     locale: z.string().optional().default('en').describe("Locale (default: en)")
   }),
   handler: async (args: { 
@@ -18,6 +19,7 @@ export const configureBookingTool = {
     service_id: string;
     participant_count?: number;
     phone_number?: string;
+    returning_customer?: string;
     locale?: string;
   }) => {
     const companyId = args.company_id || process.env.COMPANY_ID;
@@ -32,6 +34,7 @@ export const configureBookingTool = {
       Number(args.service_id),
       args.participant_count,
       args.phone_number,
+      args.returning_customer,
       args.locale
     );
     

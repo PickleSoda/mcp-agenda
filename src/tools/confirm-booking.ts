@@ -59,6 +59,7 @@ export const confirmBookingTool = {
       args.accept_cancel_conditions,
       args.accept_gdpr,
       args.returning_customer,
+      args.at_home_info
     );
     
     return {

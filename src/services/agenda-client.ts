@@ -50,6 +50,30 @@ function createAgentError(error: unknown, context: string): Error {
         `API Response: ${JSON.stringify(data, null, 2)}`
       );
     }
+
+    if (status === 500) {
+      return new Error(
+        `${context} failed: Server error (500).\n\n` +
+        `AGENT ACTION REQUIRED:\n` +
+        `The Agenda.ch server encountered an internal error.\n\n` +
+        `Common causes:\n` +
+        `1. For confirm_booking: Missing or invalid required fields from configure_booking\n` +
+        `   - Did you call configure_booking first to get the required fields?\n` +
+        `   - Are all required fields included in the detail object?\n` +
+        `2. Invalid detail field format\n` +
+        `   - Phone numbers must have no spaces (e.g., +41791234567)\n` +
+        `   - Check that all custom field keys match exactly from configure_booking response\n` +
+        `3. Invalid start time or agenda_id\n` +
+        `   - Ensure agenda_id was extracted from get_available_slots result\n` +
+        `   - Verify start time is in ISO 8601 format with timezone\n\n` +
+        `TROUBLESHOOTING:\n` +
+        `1. Call configure_booking(service_id, email) to see ALL required fields\n` +
+        `2. Verify your detail object matches the fields returned\n` +
+        `3. Check that location_id is available for this service (from get_bookables)\n` +
+        `4. Try calling get_available_slots again to get a fresh agenda_id\n\n` +
+        `API Response: ${JSON.stringify(data, null, 2)}`
+      );
+    }
     
     return new Error(
       `${context} failed: HTTP ${status || 'unknown'}\n` +
@@ -280,6 +304,7 @@ export const AgendaClient = {
     bookableId: number,
     participantCount: number = 1,
     phoneNumber: string = '',
+    returningCustomer: string = 'false',
     locale: string = 'en'
   ): Promise<BookingConfigureResponse> => {
     try {
@@ -291,6 +316,7 @@ export const AgendaClient = {
       payload.append('bookables[0][type]', 'Service');
       payload.append('bookables[0][participantCount]', participantCount.toString());
       payload.append('phone_number', phoneNumber);
+      payload.append('returning_customer', returningCustomer);
 
       const response = await axios.post(`${BASE_URL}/api_front/bookings/configure`, payload.toString(), {
         headers: {
@@ -335,6 +361,7 @@ export const AgendaClient = {
     referer: string = 'https://ssskin.ch/',
     acceptCancelConditions: string = 'on',
     acceptGdpr: string = 'on',
+    returningCustomer: string = 'false',
     atHomeInfo: string = ''
   ): Promise<BookingConfirmResponse> => {
     try {
@@ -348,10 +375,18 @@ export const AgendaClient = {
       payload.append('locale', locale);
       payload.append('referer', referer);
       payload.append('at_home_info', atHomeInfo);
+      payload.append('returning_customer', returningCustomer);
       
       // Dynamic detail fields
+      // Check if key already has brackets (e.g., "child[firstname]") vs plain key (e.g., "firstname")
       for (const [key, value] of Object.entries(detail)) {
-        payload.append(`detail[${key}]`, value);
+        if (key.includes('[')) {
+          // Already has brackets like "child[firstname]" - use as-is
+          payload.append(key, value);
+        } else {
+          // Plain key like "firstname" - wrap with detail[]
+          payload.append(`detail[${key}]`, value);
+        }
       }
       
       payload.append('email', email);
