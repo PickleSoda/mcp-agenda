@@ -26,11 +26,21 @@ export const getAvailabilitiesTool = {
       throw new Error("company_id is required either as an argument or COMPANY_ID env var");
     }
 
+    const serviceId = Number(args.service_id);
+    const locationId = Number(args.location_id);
+
+    if (isNaN(serviceId)) {
+      throw new Error(`Invalid service_id: "${args.service_id}" is not a valid number`);
+    }
+    if (isNaN(locationId)) {
+      throw new Error(`Invalid location_id: "${args.location_id}" is not a valid number`);
+    }
+
     const availabilities = await AgendaClient.getAvailabilities(
       companyId,
       args.date,
-      Number(args.service_id),
-      Number(args.location_id),
+      serviceId,
+      locationId,
       args.agenda_id || 'anyone',
       args.range || '3months'
     );

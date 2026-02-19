@@ -1,6 +1,6 @@
 {
 	"servers": {
-		"agenda": {
+		"mcp-agenda": {
 			"url": "http://localhost:3000/sse"
 		}
 	},
